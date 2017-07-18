@@ -162,9 +162,8 @@ equations zeilensummen(all_reg)
 
 zeilensummen(sub_regions) .. v_data(sub_regions, super_cropcategory) =e= sum(sub_cropcategories, v_data(sub_regions, sub_cropcategories));
 spaltensummen(sub_cropcategories) .. v_data(super_region, sub_cropcategories) =e= sum(sub_regions, v_data(sub_regions, sub_cropcategories));
-opt_hpd .. v_hpd =e= sum((sub_regions, sub_cropcategories) $ (p_data(sub_regions, sub_cropcategories) ne 0) ,
-                                 sqr((v_data(sub_regions, sub_cropcategories) - p_data(sub_regions, sub_cropcategories))
-                                           /(std * p_data(sub_regions, sub_cropcategories))));
+opt_hpd .. v_hpd =e= sum((sub_regions, sub_cropcategories), sqr((v_data(sub_regions, sub_cropcategories) - p_data(sub_regions, sub_cropcategories))
+                                                                  /(std * p_data(sub_regions, sub_cropcategories) + 0.1)));
 
 model tabloe /spaltensummen, zeilensummen, opt_hpd/;
 
