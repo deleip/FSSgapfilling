@@ -156,16 +156,16 @@ scalar   std  /0.05/;
 variable v_hpd;
 
 
-equations zeilensummen(all_reg, croptypes)
-          spaltensummen(all_reg, croptypes)
+equations zeilensummen(all_reg)
+          spaltensummen(croptypes)
           opt_hpd;
 
-zeilensummen(all_reg, croptypes) .. v_data(sub_regions, super_cropyategory) =e= sum(sub_cropcategories, v_data(sub_regions, sub_cropcategories));
-spaltensummen(all_reg, croptypes) .. v_data(super_region, sub_cropcategories) =e= sum(sub_regions, v_data(sub_regions, sub_cropcategories));
-opt_hpd .. v_hpd =e= sum((sub_regions, sub_cropcategories),((v_data(sub_regions, sub_cropcategories) - p_data(sub_regions, sub_cropcategories))
-                                                                 /(std * p_data(sub_regions, dub_cropcategories)))**2);
+zeilensummen(sub_regions) .. v_data(sub_regions, super_cropcategory) =e= sum(sub_cropcategories, v_data(sub_regions, sub_cropcategories));
+spaltensummen(sub_cropcategories) .. v_data(super_region, sub_cropcategories) =e= sum(sub_regions, v_data(sub_regions, sub_cropcategories));
+opt_hpd .. v_hpd =e= sum((sub_regions, sub_cropcategories),sqr((v_data(sub_regions, sub_cropcategories) - p_data(sub_regions, sub_cropcategories))
+                                                                 /(std * p_data(sub_regions, sub_cropcategories))));
 
-model tabloe /spaltensumme, zeilensumme, opt_hpd/;
+model tabloe /spaltensummen, zeilensummen, opt_hpd/;
 
 
 execute_unload "C:\Users\Debbora\jrc\tests\data_a.gdx" v_data;

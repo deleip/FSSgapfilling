@@ -83,6 +83,6 @@ loop(sub_regions,
 );
 
 
-p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);    
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-solve taloe USING NLP MINIMIZING v_hpd;
+solve tabloe USING NLP MINIMIZING v_hpd;
