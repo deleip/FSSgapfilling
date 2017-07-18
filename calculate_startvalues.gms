@@ -68,16 +68,16 @@ display super_region, super_cropcategory, sub_regions, sub_cropcategories;
 
 
 loop(sub_regions,
-     needed_sum_row = data.lo(sub_regions, super_cropcategory);
-     sum_row = sum(sub_cropcategories, data.lo(sub_regions, sub_cropcategories));
-     sum_for_shares = sum(sub_cropcategories $ (data.lo(sub_regions, sub_cropcategories) ne data.up(sub_regions, sub_cropcategories)), data.lo(super_region, sub_cropcategories));
+     needed_sum_row = v_data.lo(sub_regions, super_cropcategory);
+     sum_row = sum(sub_cropcategories, v_data.lo(sub_regions, sub_cropcategories));
+     sum_for_shares = sum(sub_cropcategories $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)), v_data.lo(super_region, sub_cropcategories));
      if(((needed_sum_row - sum_row ne 0) AND sum_for_shares = 0),
-         data.l(sub_regions, sub_cropcategories) = data.lo(sub_regions, sub_cropcategories);
-         data.lo(sub_regions, sub_cropcategories) = 0;
-         data.up(sub_regions, sub_cropcategories) = inf;
+         v_data.l(sub_regions, sub_cropcategories) = v_data.lo(sub_regions, sub_cropcategories);
+         v_data.lo(sub_regions, sub_cropcategories) = 0;
+         v_data.up(sub_regions, sub_cropcategories) = inf;
      elseif(needed_sum_row - sum_row ne 0),
-         loop(sub_cropcategories $ (data.lo(sub_regions, sub_cropcategories) ne data.up(sub_regions, sub_cropcategories)),
-             data.l(sub_regions, sub_cropcategories) = (needed_sum_row - sum_row) * (data.lo(super_region, sub_cropcategories) / sum_for_shares)
+         loop(sub_cropcategories $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)),
+             v_data.l(sub_regions, sub_cropcategories) = (needed_sum_row - sum_row) * (v_data.lo(super_region, sub_cropcategories) / sum_for_shares)
          );
      );
 );

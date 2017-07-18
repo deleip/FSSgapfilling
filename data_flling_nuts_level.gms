@@ -61,16 +61,16 @@ $offdelim
 * for upper bounds it would be good to have area here, but area is all kaputt
 ************************
 
-
-variable data(all_reg, croptypes);
-data.fx(n0, croptypes) $ (data_n0(n0, croptypes) ne 0) = data_n0(n0, croptypes);
-data.fx(n1_2, croptypes) $ (data_n1_2(n1_2, croptypes) ne 0) = data_n1_2(n1_2, croptypes);
-data.fx(n2_3, croptypes) $ (data_n2_3(n2_3, croptypes) ne 0) = data_n2_3(n2_3, croptypes);
-data.lo(all_reg, croptypes) $ (data.lo(all_reg, croptypes) = -inf) = 0;
+parameter p_data(all_reg, croptypes);
+variable v_data(all_reg, croptypes);
+v_data.fx(n0, croptypes) $ (data_n0(n0, croptypes) ne 0) = data_n0(n0, croptypes);
+v_data.fx(n1_2, croptypes) $ (data_n1_2(n1_2, croptypes) ne 0) = data_n1_2(n1_2, croptypes);
+v_data.fx(n2_3, croptypes) $ (data_n2_3(n2_3, croptypes) ne 0) = data_n2_3(n2_3, croptypes);
+v_data.lo(all_reg, croptypes) $ (v_data.lo(all_reg, croptypes) = -inf) = 0;
 * we believe, that on nuts0 level data is comlete, therefore zeros are "real" zeros and can be fixed
-data.fx(n0, croptypes) = data.lo(n0, croptypes);
+v_data.fx(n0, croptypes) = v_data.lo(n0, croptypes);
 * same with "AGRAREA"
-data.fx(all_reg, "AGRAREA") = data.lo(all_reg, "AGRAREA");
+v_data.fx(all_reg, "AGRAREA") = v_data.lo(all_reg, "AGRAREA");
 
 
 
@@ -86,14 +86,14 @@ scalar agrarea_n0
 
 
 loop(n0,
-   agrarea_n0 = data.lo(n0, "AGRAREA");
-   sum_agrarea_n12 = sum(n1_2 $ (nuts_mappings(n0, n1_2)), data.lo(n1_2, "AGRAREA"));
-   loop(n1_2 $ (nuts_mappings(n0, n1_2)),
-      data.fx(n1_2, "AGRAREA") $ (data.lo(n1_2, "AGRAREA") = data.up(n1_2, "AGRAREA")) = data.lo(n1_2, "AGRAREA") * (agrarea_n0/sum_agrarea_n12);
-      agrarea_n12 = data.lo(n1_2, "AGRAREA");
-      sum_agrarea_n23 = sum(n2_3 $ (nuts_mappings(n1_2, n2_3)), data.lo(n2_3, "AGRAREA"));
-      loop(n2_3 $ (nuts_mappings(n1_2, n2_3)),
-         data.fx(n2_3, "AGRAREA") $ (data.lo(n2_3, "AGRAREA") = data.up(n2_3, "AGRAREA")) = data.lo(n2_3, "AGRAREA") * (agrarea_n12/sum_agrarea_n23)
+   agrarea_n0 = v_data.lo(n0, "AGRAREA");
+   sum_agrarea_n12 = sum(n1_2 $ (nuts_mappings(n0, n1_2)), v_data.lo(n1_2, "AGRAREA"));
+   loop(n1_2 $ ((nuts_mappings(n0, n1_2)) AND (agrarea_n0 ne 0)),
+      v_data.fx(n1_2, "AGRAREA") $ (v_data.lo(n1_2, "AGRAREA") = v_data.up(n1_2, "AGRAREA")) = v_data.lo(n1_2, "AGRAREA") * (agrarea_n0/sum_agrarea_n12);
+      agrarea_n12 = v_data.lo(n1_2, "AGRAREA");
+      sum_agrarea_n23 = sum(n2_3 $ (nuts_mappings(n1_2, n2_3)), v_data.lo(n2_3, "AGRAREA"));
+      loop(n2_3 $ ((nuts_mappings(n1_2, n2_3)) AND (agrarea_n12 ne 0)),
+         v_data.fx(n2_3, "AGRAREA") $ (v_data.lo(n2_3, "AGRAREA") = v_data.up(n2_3, "AGRAREA")) = v_data.lo(n2_3, "AGRAREA") * (agrarea_n12/sum_agrarea_n23)
       );
    );
 );
@@ -114,22 +114,22 @@ scalar area_h0
 
 
 loop(n0,
-   area_h0 = data.lo(n0, "AGRAREA");
-   sum_area_h1 = sum(hierarchy_1 $ hierarchy_mappings("AGRAREA", hierarchy_1), data.lo(n0, hierarchy_1));
+   area_h0 = v_data.lo(n0, "AGRAREA");
+   sum_area_h1 = sum(hierarchy_1 $ hierarchy_mappings("AGRAREA", hierarchy_1), v_data.lo(n0, hierarchy_1));
    loop(hierarchy_1 $ hierarchy_mappings("AGRAREA", hierarchy_1),
-      data.fx(n0, hierarchy_1) $ (data.lo(n0, hierarchy_1) ne 0) = data.lo(n0, hierarchy_1) * (area_h0/sum_area_h1);
-      area_h1 = data.lo(n0, hierarchy_1);
-      sum_area_h2 = sum(hierarchy_2 $ hierarchy_mappings(hierarchy_1, hierarchy_2), data.lo(n0, hierarchy_2));
+      v_data.fx(n0, hierarchy_1) $ (v_data.lo(n0, hierarchy_1) ne 0) = v_data.lo(n0, hierarchy_1) * (area_h0/sum_area_h1);
+      area_h1 = v_data.lo(n0, hierarchy_1);
+      sum_area_h2 = sum(hierarchy_2 $ hierarchy_mappings(hierarchy_1, hierarchy_2), v_data.lo(n0, hierarchy_2));
       loop(hierarchy_2 $ hierarchy_mappings(hierarchy_1, hierarchy_2),
-         data.fx(n0, hierarchy_2) $ (data.lo(n0, hierarchy_2) ne 0) = data.lo(n0, hierarchy_2) * (area_h1/sum_area_h2);
-         area_h2 = data.lo(n0, hierarchy_2);
-         sum_area_h3 = sum(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3), data.lo(n0, hierarchy_3));
+         v_data.fx(n0, hierarchy_2) $ (v_data.lo(n0, hierarchy_2) ne 0) = v_data.lo(n0, hierarchy_2) * (area_h1/sum_area_h2);
+         area_h2 = v_data.lo(n0, hierarchy_2);
+         sum_area_h3 = sum(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3), v_data.lo(n0, hierarchy_3));
          loop(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3),
-            data.fx(n0, hierarchy_3) $ (data.lo(n0, hierarchy_3) ne 0) = data.lo(n0, hierarchy_3) * (area_h2/sum_area_h3);
-            area_h3 = data.lo(n0, hierarchy_3);
-            sum_area_h4 = sum(hierarchy_4 $ hierarchy_mappings(hierarchy_3, hierarchy_4), data.lo(n0, hierarchy_4));
+            v_data.fx(n0, hierarchy_3) $ (v_data.lo(n0, hierarchy_3) ne 0) = v_data.lo(n0, hierarchy_3) * (area_h2/sum_area_h3);
+            area_h3 = v_data.lo(n0, hierarchy_3);
+            sum_area_h4 = sum(hierarchy_4 $ hierarchy_mappings(hierarchy_3, hierarchy_4), v_data.lo(n0, hierarchy_4));
             loop(hierarchy_4 $ hierarchy_mappings(hierarchy_3, hierarchy_4),
-               data.fx(n0, hierarchy_4) $ (data.lo(n0, hierarchy_4) ne 0) = data.lo(n0, hierarchy_4) * (area_h3/sum_area_h4);
+               v_data.fx(n0, hierarchy_4) $ (v_data.lo(n0, hierarchy_4) ne 0) = v_data.lo(n0, hierarchy_4) * (area_h3/sum_area_h4);
             );
          );
       );
@@ -152,9 +152,10 @@ scalar   needed_sum_row
          sum_row
          sum_for_shares;
 
+scalar   std  /0.05/;
+variable v_hpd;
 
-
-execute_unload "C:\Users\Debbora\jrc\tests\data_a.gdx" data;
+execute_unload "C:\Users\Debbora\jrc\tests\data_a.gdx" v_data;
 
 loop(n0,
    loop(hierarchy_0,
@@ -164,15 +165,21 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n0" "h0"
    );
 );
 
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
 equations zeilensummen_n0_h0(n1_2, hierarchy_0)
-          spaltensummen_n0_h0(n0, hierarchy_1);
+          spaltensummen_n0_h0(n0, hierarchy_1)
+          opt_hpd_n0_h0;
 
-zeilensummen_n0_h0(n1_2, hierarchy_0) .. data(n1_2, hierarchy_0) =e= sum(croptypes $ hierarchy_mappings(hierarchy_0, croptypes), data(n1_2, croptypes));
-spaltensummen_n0_h0(n0, hierarchy_1) .. data(n0, hierarchy_1) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), data(n1_2, hierarchy_1));
+zeilensummen_n0_h0(n1_2, hierarchy_0) .. v_data(n1_2, hierarchy_0) =e= sum(croptypes $ hierarchy_mappings(hierarchy_0, croptypes), v_data(n1_2, croptypes));
+spaltensummen_n0_h0(n0, hierarchy_1) .. v_data(n0, hierarchy_1) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), v_data(n1_2, hierarchy_1));
+opt_hpd_n0_h0 .. v_hpd =e= sum((n1_2, hierarchy_1),((v_data(n1_2, hierarchy_1) - p_data(n1_2, hierarchy_1))/(std * p_data(n1_2, hierarchy_1)))**2);
 ****** SOLVE
+model n0_h0 /zeilensummen_n0_h0, spaltensummen_n0_h0, opt_hpd_n0_h0 /;
+SOLVE n0_h0 USING NLP MINIMIZING v_hpd;
 
-
+execute_unload "C:\Users\Debbora\jrc\tests\data_b.gdx" v_data;
+$stop
 
 loop(n0,
    loop(hierarchy_1,
@@ -182,12 +189,19 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n0" "h1"
    );
 );
 
-equations zeilensummen_n0_h1(n1_2, hierarchy_1)
-          spaltensummen_n0_h1(n0, hierarchy_2);
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-zeilensummen_n0_h1(n1_2, hierarchy_1) .. data(n1_2, hierarchy_1) =e= sum(croptypes $ hierarchy_mappings(hierarchy_1, croptypes), data(n1_2, croptypes));
-spaltensummen_n0_h1(n0, hierarchy_2) .. data(n0, hierarchy_2) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), data(n1_2, hierarchy_2));
+equations zeilensummen_n0_h1(n1_2, hierarchy_1)
+          spaltensummen_n0_h1(n0, hierarchy_2)
+          opt_hpd_n0_h1;
+
+zeilensummen_n0_h1(n1_2, hierarchy_1) .. v_data(n1_2, hierarchy_1) =e= sum(croptypes $ hierarchy_mappings(hierarchy_1, croptypes), v_data(n1_2, croptypes));
+spaltensummen_n0_h1(n0, hierarchy_2) .. v_data(n0, hierarchy_2) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), v_data(n1_2, hierarchy_2));
+opt_hpd_n0_h1 .. v_hpd =e= sum((n1_2, hierarchy_2),((v_data(n1_2, hierarchy_2) - p_data(n1_2, hierarchy_2))/(std * p_data(n1_2, hierarchy_2)))**2);
 ****** SOLVE
+model n0_h1 /zeilensummen_n0_h1, spaltensummen_n0_h1, opt_hpd_n0_h1/;
+SOLVE n0_h1 USING NLP MINIMIZING v_hpd;
+
 
 loop(n0,
    loop(hierarchy_2,
@@ -197,12 +211,19 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n0" "h2"
    );
 );
 
-equations zeilensummen_n0_h2(n1_2, hierarchy_2)
-          spaltensummen_n0_h2(n0, hierarchy_3);
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-zeilensummen_n0_h2(n1_2, hierarchy_2) .. data(n1_2, hierarchy_2) =e= sum(croptypes $ hierarchy_mappings(hierarchy_2, croptypes), data(n1_2, croptypes));
-spaltensummen_n0_h2(n0, hierarchy_3) .. data(n0, hierarchy_3) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), data(n1_2, hierarchy_3));
+equations zeilensummen_n0_h2(n1_2, hierarchy_2)
+          spaltensummen_n0_h2(n0, hierarchy_3)
+          opt_hpd_n0_h2;
+
+zeilensummen_n0_h2(n1_2, hierarchy_2) .. v_data(n1_2, hierarchy_2) =e= sum(croptypes $ hierarchy_mappings(hierarchy_2, croptypes), v_data(n1_2, croptypes));
+spaltensummen_n0_h2(n0, hierarchy_3) .. v_data(n0, hierarchy_3) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), v_data(n1_2, hierarchy_3));
+opt_hpd_n0_h2 .. v_hpd =e= sum((n1_2, hierarchy_3),((v_data(n1_2, hierarchy_3) - p_data(n1_2, hierarchy_3))/(std * p_data(n1_2, hierarchy_3)))**2);
 ****** SOLVE
+model n0_h2 /zeilensummen_n0_h2, spaltensummen_n0_h2, opt_hpd_n0_h2/;
+SOLVE n0_h2 USING NLP MINIMIZING v_hpd;
+
 
 loop(n0,
    loop(hierarchy_3,
@@ -212,12 +233,19 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n0" "h3"
    );
 );
 
-equations zeilensummen_n0_h3(n1_2, hierarchy_3)
-          spaltensummen_n0_h3(n0, hierarchy_4);
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-zeilensummen_n0_h3(n1_2, hierarchy_3) .. data(n1_2, hierarchy_3) =e= sum(croptypes $ hierarchy_mappings(hierarchy_3, croptypes), data(n1_2, croptypes));
-spaltensummen_n0_h3(n0, hierarchy_4) .. data(n0, hierarchy_4) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), data(n1_2, hierarchy_4));
+equations zeilensummen_n0_h3(n1_2, hierarchy_3)
+          spaltensummen_n0_h3(n0, hierarchy_4)
+          opt_hpd_n0_h3;
+
+zeilensummen_n0_h3(n1_2, hierarchy_3) .. v_data(n1_2, hierarchy_3) =e= sum(croptypes $ hierarchy_mappings(hierarchy_3, croptypes), v_data(n1_2, croptypes));
+spaltensummen_n0_h3(n0, hierarchy_4) .. v_data(n0, hierarchy_4) =e= sum(n1_2 $ nuts_mappings(n0, n1_2), v_data(n1_2, hierarchy_4));
+opt_hpd_n0_h3 .. v_hpd =e= sum((n1_2, hierarchy_4),((v_data(n1_2, hierarchy_4) - p_data(n1_2, hierarchy_4))/(std * p_data(n1_2, hierarchy_4)))**2);
 ****** SOLVE
+model n0_h3 /zeilensummen_n0_h3, spaltensummen_n0_h3, opt_hpd_n0_h3/;
+SOLVE n0_h3 USING NLP MINIMIZING v_hpd;
+
 
 loop(n1_2,
    loop(hierarchy_0,
@@ -227,12 +255,19 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n1_2" "h0"
    );
 );
 
-equations zeilensummen_n12_h0(n2_3, hierarchy_0)
-          spaltensummen_n12_h0(n1_2, hierarchy_1);
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-zeilensummen_n12_h0(n2_3, hierarchy_0) .. data(n2_3, hierarchy_0) =e= sum(croptypes $ hierarchy_mappings(hierarchy_0, croptypes), data(n2_3, croptypes));
-spaltensummen_n12_h0(n1_2, hierarchy_1) .. data(n1_2, hierarchy_1) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), data(n2_3, hierarchy_1));
+equations zeilensummen_n12_h0(n2_3, hierarchy_0)
+          spaltensummen_n12_h0(n1_2, hierarchy_1)
+          opt_hpd_n12_h0;
+
+zeilensummen_n12_h0(n2_3, hierarchy_0) .. v_data(n2_3, hierarchy_0) =e= sum(croptypes $ hierarchy_mappings(hierarchy_0, croptypes), v_data(n2_3, croptypes));
+spaltensummen_n12_h0(n1_2, hierarchy_1) .. v_data(n1_2, hierarchy_1) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), v_data(n2_3, hierarchy_1))
+opt_hpd_n12_h0 .. v_hpd =e= sum((n2_3, hierarchy_1),((v_data(n2_3, hierarchy_1) - p_data(n2_3, hierarchy_1))/(std * p_data(n2_3, hierarchy_1)))**2);
 ****** SOLVE
+model n12_h0 /zeilensummen_n12_h0, spaltensummen_n12_h0, opt_hpd_n12_h0/;
+SOLVE n12_h0 USING NLP MINIMIZING v_hpd;
+
 
 loop(n1_2,
    loop(hierarchy_1,
@@ -242,12 +277,19 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n1_2" "h1"
    );
 );
 
-equations zeilensummen_n12_h1(n2_3, hierarchy_1)
-          spaltensummen_n12_h1(n1_2, hierarchy_2);
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-zeilensummen_n12_h1(n2_3, hierarchy_1) .. data(n2_3, hierarchy_1) =e= sum(croptypes $ hierarchy_mappings(hierarchy_1, croptypes), data(n2_3, croptypes));
-spaltensummen_n12_h1(n1_2, hierarchy_2) .. data(n1_2, hierarchy_2) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), data(n2_3, hierarchy_2));
+equations zeilensummen_n12_h1(n2_3, hierarchy_1)
+          spaltensummen_n12_h1(n1_2, hierarchy_2)
+          opt_hpd_n12_h1;
+
+zeilensummen_n12_h1(n2_3, hierarchy_1) .. v_data(n2_3, hierarchy_1) =e= sum(croptypes $ hierarchy_mappings(hierarchy_1, croptypes), v_data(n2_3, croptypes));
+spaltensummen_n12_h1(n1_2, hierarchy_2) .. v_data(n1_2, hierarchy_2) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), v_data(n2_3, hierarchy_2));
+opt_hpd_n12_h1 .. v_hpd =e= sum((n2_3, hierarchy_2),((v_data(n2_3, hierarchy_2) - p_data(n2_3, hierarchy_2))/(std * p_data(n2_3, hierarchy_2)))**2);
 ****** SOLVE
+model n12_h1 /zeilensummen_n12_h1, spaltensummen_n12_h1, opt_hpd_n12_h1/;
+SOLVE n12_h1 USING NLP MINIMIZING v_hpd;
+
 
 loop(n1_2,
    loop(hierarchy_2,
@@ -257,12 +299,19 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n1_2" "h2"
    );
 );
 
-equations zeilensummen_n12_h2(n2_3, hierarchy_2)
-          spaltensummen_n12_h2(n1_2, hierarchy_3);
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
-zeilensummen_n12_h2(n2_3, hierarchy_2) .. data(n2_3, hierarchy_2) =e= sum(croptypes $ hierarchy_mappings(hierarchy_2, croptypes), data(n2_3, croptypes));
-spaltensummen_n12_h2(n1_2, hierarchy_3) .. data(n1_2, hierarchy_3) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), data(n2_3, hierarchy_3));
+equations zeilensummen_n12_h2(n2_3, hierarchy_2)
+          spaltensummen_n12_h2(n1_2, hierarchy_3)
+          opt_hpd_n12_h2;
+
+zeilensummen_n12_h2(n2_3, hierarchy_2) .. v_data(n2_3, hierarchy_2) =e= sum(croptypes $ hierarchy_mappings(hierarchy_2, croptypes), v_data(n2_3, croptypes));
+spaltensummen_n12_h2(n1_2, hierarchy_3) .. v_data(n1_2, hierarchy_3) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), v_data(n2_3, hierarchy_3));
+opt_hpd_n12_h2 .. v_hpd =e= sum((n2_3, hierarchy_3),((v_data(n2_3, hierarchy_3) - p_data(n2_3, hierarchy_3))/(std * p_data(n2_3, hierarchy_3)))**2);
 ****** SOLVE
+model n12_h2 /zeilensummen_n12_h2, spaltensummen_n12_h2, opt_hpd_n12_h2/;
+SOLVE n12_h2 USING NLP MINIMIZING v_hpd;
+
 
 loop(n1_2,
    loop(hierarchy_3,
@@ -272,16 +321,23 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\calculate_startvalues.gms" "n1_2" "h3"
    );
 );
 
+p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
+
 equations zeilensummen_n12_h3(n2_3, hierarchy_3)
-          spaltensummen_n12_h3(n1_2, hierarchy_4);
+          spaltensummen_n12_h3(n1_2, hierarchy_4)
+          opt_hpd_n12_h3;
 
-zeilensummen_n12_h3(n2_3, hierarchy_3) .. data(n2_3, hierarchy_3) =e= sum(croptypes $ hierarchy_mappings(hierarchy_3, croptypes), data(n2_3, croptypes));
-spaltensummen_n12_h3(n1_2, hierarchy_4) .. data(n1_2, hierarchy_4) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), data(n2_3, hierarchy_4));
+zeilensummen_n12_h3(n2_3, hierarchy_3) .. v_data(n2_3, hierarchy_3) =e= sum(croptypes $ hierarchy_mappings(hierarchy_3, croptypes), v_data(n2_3, croptypes));
+spaltensummen_n12_h3(n1_2, hierarchy_4) .. v_data(n1_2, hierarchy_4) =e= sum(n2_3 $ nuts_mappings(n1_2, n2_3), v_data(n2_3, hierarchy_4));
+opt_hpd_n12_h3 .. v_hpd =e= sum((n2_3, hierarchy_4),((v_data(n2_3, hierarchy_4) - p_data(n2_3, hierarchy_4))/(std * p_data(n2_3, hierarchy_4)))**2);
 ****** SOLVE
+model n12_h3 /zeilensummen_n12_h3, spaltensummen_n12_h3, opt_hpd_n12_h3/;
+SOLVE n12_h3 USING NLP MINIMIZING v_hpd;
 
 
 
-execute_unload "C:\Users\Debbora\jrc\tests\data_b.gdx" data;
+
+execute_unload "C:\Users\Debbora\jrc\tests\data_b.gdx" v_data;
 
 $stop
 
