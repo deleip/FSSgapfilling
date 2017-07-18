@@ -75,7 +75,7 @@ loop(sub_regions,
          v_data.l(sub_regions, sub_cropcategories) = v_data.lo(sub_regions, sub_cropcategories);
          v_data.lo(sub_regions, sub_cropcategories) = 0;
          v_data.up(sub_regions, sub_cropcategories) = inf;
-     elseif(needed_sum_row - sum_row ne 0),
+     elseif(sum_for_shares ne 0),
          loop(sub_cropcategories $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)),
              v_data.l(sub_regions, sub_cropcategories) = (needed_sum_row - sum_row) * (v_data.lo(super_region, sub_cropcategories) / sum_for_shares)
          );
@@ -86,3 +86,5 @@ loop(sub_regions,
 p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
 solve tabloe USING NLP MINIMIZING v_hpd;
+
+v_data.fx(sub_regions, sub_cropcategories) = v_data.l(sub_regions, sub_cropcategories); 
