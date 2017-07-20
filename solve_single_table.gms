@@ -25,7 +25,7 @@
 
 * first we have to find out how the table looks like, i.e. fill the sets for sub/super regions/cropcategories correctly!
 super_region(all_reg) = NO;
-super_cropcategory(croptypes) = NO;
+super_cropcategory(cropcategories) = NO;
 
 if(sameas("%1", "n0"),
      super_region(n0) = YES;
@@ -45,10 +45,10 @@ if(sameas("%2", "h0"),
 
 
 sub_regions(all_reg) = NO;
-sub_cropcategories(croptypes) = NO;
+sub_cropcategories(cropcategories) = NO;
 
 sub_regions(all_reg) = YES $ nuts_mappings(super_region, all_reg);
-sub_cropcategories(croptypes) = YES $ hierarchy_mappings(super_cropcategory, croptypes);
+sub_cropcategories(cropcategories) = YES $ hierarchy_mappings(super_cropcategory, cropcategories);
 
 
 
@@ -87,7 +87,7 @@ loop(sub_cropcategories,
 *startwerte(sub_regions, sub_cropcategories) $ (v_data.up(sub_regions, sub_cropcategories) ne v_data.lo(sub_regions, sub_cropcategories))
                                                                  = v_data.l(sub_regions, sub_cropcategories);
 
-p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
+p_data(all_reg, cropcategories) = v_data.l(all_reg, cropcategories);
 
 
 solve tabloe USING NLP MINIMIZING v_hpd;
