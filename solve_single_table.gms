@@ -45,7 +45,10 @@ if(sameas("%2", "h0"),
 sub_regions(all_reg) = NO;
 sub_cropcategories(croptypes) = NO;
 
+sub_regions(all_reg) = YES $ nuts_mappings(super_region, all_reg);
+sub_cropcategories(croptypes) = YES $ hierarchy_mappings(super_cropcategory, croptypes);
 
+$ontext
 if(sameas("%1", "n0"),
      sub_regions(n1_2) = YES $ nuts_mappings(super_region, n1_2);
      elseif sameas("%1", "n1_2"),
@@ -61,7 +64,7 @@ if(sameas("%2", "h0"),
              elseif sameas("%2", "h3"),
                  sub_cropcategories(hierarchy_4) = YES $ hierarchy_mappings(super_cropcategory, hierarchy_4);
 );
-
+$offtext
 
 display super_region, super_cropcategory, sub_regions, sub_cropcategories;
 
@@ -70,21 +73,40 @@ display super_region, super_cropcategory, sub_regions, sub_cropcategories;
 loop(sub_regions,
      needed_sum_row = v_data.lo(sub_regions, super_cropcategory);
      sum_row = sum(sub_cropcategories, v_data.lo(sub_regions, sub_cropcategories));
-     sum_for_shares = sum(sub_cropcategories $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)), v_data.lo(super_region, sub_cropcategories));
-     if(((needed_sum_row - sum_row ne 0) AND sum_for_shares = 0),
+     sum_for_shares_row = sum(sub_cropcategories $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)), v_data.lo(super_region, sub_cropcategories));
+     if(((needed_sum_row - sum_row ne 0) AND sum_for_shares_row = 0),
          v_data.l(sub_regions, sub_cropcategories) = v_data.lo(sub_regions, sub_cropcategories);
          v_data.lo(sub_regions, sub_cropcategories) = 0;
          v_data.up(sub_regions, sub_cropcategories) = inf;
-     elseif(sum_for_shares ne 0),
+     elseif(sum_for_shares_row ne 0),
          loop(sub_cropcategories $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)),
-             v_data.l(sub_regions, sub_cropcategories) = (needed_sum_row - sum_row) * (v_data.lo(super_region, sub_cropcategories) / sum_for_shares)
+             v_data.l(sub_regions, sub_cropcategories) = (needed_sum_row - sum_row) * (v_data.lo(super_region, sub_cropcategories) / sum_for_shares_row)
          );
      );
 );
 
+loop(sub_cropcategories,
+     needed_sum_column = v_data.lo(super_region, sub_cropcategories);
+     sum_column = sum(sub_regions, v_data.lo(sub_regions, sub_cropcategories));
+     sum_for_shares_column = sum(sub_regions $ (v_data.lo(sub_regions, sub_cropcategories) ne v_data.up(sub_regions, sub_cropcategories)), v_data.lo(sub_regions, super_cropcategory));
+     if(((needed_sum_column - sum_column ne 0) AND sum_for_shares_column = 0),
+         v_data.l(sub_regions, sub_cropcategories) = v_data.lo(sub_regions, sub_cropcategories);
+         v_data.lo(sub_regions, sub_cropcategories) = 0;
+         v_data.up(sub_regions, sub_cropcategories) = inf;
+     );
+);
+
+
+startwerte(sub_regions, sub_cropcategories) $ (v_data.up(sub_regions, sub_cropcategories) ne v_data.lo(sub_regions, sub_cropcategories))
+                                                                 = v_data.l(sub_regions, sub_cropcategories);
 
 p_data(all_reg, croptypes) = v_data.l(all_reg, croptypes);
 
+
 solve tabloe USING NLP MINIMIZING v_hpd;
 
-v_data.fx(sub_regions, sub_cropcategories) = v_data.l(sub_regions, sub_cropcategories); 
+v_directly_after_solve.lo(sub_regions, sub_cropcategories) = v_data.lo(sub_regions, sub_cropcategories);
+v_directly_after_solve.up(sub_regions, sub_cropcategories) = v_data.up(sub_regions, sub_cropcategories);
+v_directly_after_solve.l(sub_regions, sub_cropcategories) = v_data.l(sub_regions, sub_cropcategories);
+
+v_data.fx(sub_regions, sub_cropcategories) = v_data.l(sub_regions, sub_cropcategories);

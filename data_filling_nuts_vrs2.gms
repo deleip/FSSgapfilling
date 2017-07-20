@@ -60,7 +60,8 @@ $offdelim
 ************************
 * for upper bounds it would be good to have area here, but area is all kaputt
 ************************
-
+parameter startwerte(all_reg, croptypes);
+variable v_directly_after_solve(all_reg, croptypes);
 parameter p_data(all_reg, croptypes);
 variable v_data(all_reg, croptypes);
 v_data.fx(n0, croptypes) $ (data_n0(n0, croptypes) ne 0) = data_n0(n0, croptypes);
@@ -86,14 +87,14 @@ scalar agrarea_n0
 
 
 loop(n0,
-   agrarea_n0 = v_data.lo(n0, "AGRAREA");
-   sum_agrarea_n12 = sum(n1_2 $ (nuts_mappings(n0, n1_2)), v_data.lo(n1_2, "AGRAREA"));
+   agrarea_n0 = v_data.l(n0, "AGRAREA");
+   sum_agrarea_n12 = sum(n1_2 $ (nuts_mappings(n0, n1_2)), v_data.l(n1_2, "AGRAREA"));
    loop(n1_2 $ ((nuts_mappings(n0, n1_2)) AND (agrarea_n0 ne 0)),
-      v_data.fx(n1_2, "AGRAREA") $ (v_data.lo(n1_2, "AGRAREA") = v_data.up(n1_2, "AGRAREA")) = v_data.lo(n1_2, "AGRAREA") * (agrarea_n0/sum_agrarea_n12);
-      agrarea_n12 = v_data.lo(n1_2, "AGRAREA");
-      sum_agrarea_n23 = sum(n2_3 $ (nuts_mappings(n1_2, n2_3)), v_data.lo(n2_3, "AGRAREA"));
+      v_data.fx(n1_2, "AGRAREA") $ (v_data.lo(n1_2, "AGRAREA") = v_data.up(n1_2, "AGRAREA")) = v_data.l(n1_2, "AGRAREA") * (agrarea_n0/sum_agrarea_n12);
+      agrarea_n12 = v_data.l(n1_2, "AGRAREA");
+      sum_agrarea_n23 = sum(n2_3 $ (nuts_mappings(n1_2, n2_3)), v_data.l(n2_3, "AGRAREA"));
       loop(n2_3 $ ((nuts_mappings(n1_2, n2_3)) AND (agrarea_n12 ne 0)),
-         v_data.fx(n2_3, "AGRAREA") $ (v_data.lo(n2_3, "AGRAREA") = v_data.up(n2_3, "AGRAREA")) = v_data.lo(n2_3, "AGRAREA") * (agrarea_n12/sum_agrarea_n23)
+         v_data.fx(n2_3, "AGRAREA") $ (v_data.lo(n2_3, "AGRAREA") = v_data.up(n2_3, "AGRAREA")) = v_data.l(n2_3, "AGRAREA") * (agrarea_n12/sum_agrarea_n23)
       );
    );
 );
@@ -114,22 +115,22 @@ scalar area_h0
 
 
 loop(n0,
-   area_h0 = v_data.lo(n0, "AGRAREA");
-   sum_area_h1 = sum(hierarchy_1 $ hierarchy_mappings("AGRAREA", hierarchy_1), v_data.lo(n0, hierarchy_1));
+   area_h0 = v_data.l(n0, "AGRAREA");
+   sum_area_h1 = sum(hierarchy_1 $ hierarchy_mappings("AGRAREA", hierarchy_1), v_data.l(n0, hierarchy_1));
    loop(hierarchy_1 $ hierarchy_mappings("AGRAREA", hierarchy_1),
-      v_data.fx(n0, hierarchy_1) $ (v_data.lo(n0, hierarchy_1) ne 0) = v_data.lo(n0, hierarchy_1) * (area_h0/sum_area_h1);
-      area_h1 = v_data.lo(n0, hierarchy_1);
-      sum_area_h2 = sum(hierarchy_2 $ hierarchy_mappings(hierarchy_1, hierarchy_2), v_data.lo(n0, hierarchy_2));
+      v_data.fx(n0, hierarchy_1) $ (v_data.lo(n0, hierarchy_1) ne 0) = v_data.l(n0, hierarchy_1) * (area_h0/sum_area_h1);
+      area_h1 = v_data.l(n0, hierarchy_1);
+      sum_area_h2 = sum(hierarchy_2 $ hierarchy_mappings(hierarchy_1, hierarchy_2), v_data.l(n0, hierarchy_2));
       loop(hierarchy_2 $ hierarchy_mappings(hierarchy_1, hierarchy_2),
-         v_data.fx(n0, hierarchy_2) $ (v_data.lo(n0, hierarchy_2) ne 0) = v_data.lo(n0, hierarchy_2) * (area_h1/sum_area_h2);
-         area_h2 = v_data.lo(n0, hierarchy_2);
-         sum_area_h3 = sum(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3), v_data.lo(n0, hierarchy_3));
+         v_data.fx(n0, hierarchy_2) $ (v_data.lo(n0, hierarchy_2) ne 0) = v_data.l(n0, hierarchy_2) * (area_h1/sum_area_h2);
+         area_h2 = v_data.l(n0, hierarchy_2);
+         sum_area_h3 = sum(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3), v_data.l(n0, hierarchy_3));
          loop(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3),
-            v_data.fx(n0, hierarchy_3) $ (v_data.lo(n0, hierarchy_3) ne 0) = v_data.lo(n0, hierarchy_3) * (area_h2/sum_area_h3);
-            area_h3 = v_data.lo(n0, hierarchy_3);
-            sum_area_h4 = sum(hierarchy_4 $ hierarchy_mappings(hierarchy_3, hierarchy_4), v_data.lo(n0, hierarchy_4));
+            v_data.fx(n0, hierarchy_3) $ (v_data.lo(n0, hierarchy_3) ne 0) = v_data.l(n0, hierarchy_3) * (area_h2/sum_area_h3);
+            area_h3 = v_data.l(n0, hierarchy_3);
+            sum_area_h4 = sum(hierarchy_4 $ hierarchy_mappings(hierarchy_3, hierarchy_4), v_data.l(n0, hierarchy_4));
             loop(hierarchy_4 $ hierarchy_mappings(hierarchy_3, hierarchy_4),
-               v_data.fx(n0, hierarchy_4) $ (v_data.lo(n0, hierarchy_4) ne 0) = v_data.lo(n0, hierarchy_4) * (area_h3/sum_area_h4);
+               v_data.fx(n0, hierarchy_4) $ (v_data.lo(n0, hierarchy_4) ne 0) = v_data.l(n0, hierarchy_4) * (area_h3/sum_area_h4);
             );
          );
       );
@@ -150,7 +151,10 @@ set info_for_batinclude /"n0", "n1_2", "h0", "h1", "h2", "h3"/;
 
 scalar   needed_sum_row
          sum_row
-         sum_for_shares;
+         sum_for_shares_row
+         needed_sum_column
+         sum_column
+         sum_for_shares_column;
 
 scalar   std  /0.05/;
 variable v_hpd;
@@ -168,7 +172,7 @@ opt_hpd .. v_hpd =e= sum((sub_regions, sub_cropcategories), sqr((v_data(sub_regi
 model tabloe /spaltensummen, zeilensummen, opt_hpd/;
 
 
-execute_unload "C:\Users\Debbora\jrc\tests\data_a.gdx" v_data;
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_0.gdx" v_data;
 
 loop(n0,
    loop(hierarchy_0,
@@ -178,7 +182,7 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n0" "h0"
    );
 );
 
-
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_1.gdx" v_data;
 
 loop(n0,
    loop(hierarchy_1,
@@ -188,6 +192,8 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n0" "h1"
    );
 );
 
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_2.gdx" v_data;
+
 loop(n0,
    loop(hierarchy_2,
       if(sum(hierarchy_3 $ hierarchy_mappings(hierarchy_2, hierarchy_3), 1),
@@ -196,6 +202,7 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n0" "h2"
    );
 );
 
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_3.gdx" v_data;
 
 loop(n0,
    loop(hierarchy_3,
@@ -205,6 +212,7 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n0" "h3"
    );
 );
 
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_4.gdx" v_data;
 
 loop(n1_2,
    loop(hierarchy_0,
@@ -214,7 +222,7 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n1_2" "h0"
    );
 );
 
-
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_5.gdx" v_data;
 
 loop(n1_2,
    loop(hierarchy_1,
@@ -224,6 +232,7 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n1_2" "h1"
    );
 );
 
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_6.gdx" v_data;
 
 loop(n1_2,
    loop(hierarchy_2,
@@ -233,6 +242,7 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n1_2" "h2"
    );
 );
 
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_7.gdx" v_data;
 
 loop(n1_2,
    loop(hierarchy_3,
@@ -243,7 +253,9 @@ $batinclude "C:\Users\Debbora\jrc\incl_d\solve_single_table.gms" "n1_2" "h3"
 );
 
 
-execute_unload "C:\Users\Debbora\jrc\tests\data_b.gdx" v_data;
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\data_8.gdx" v_data;
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\startwerte.gdx" startwerte;
+execute_unload "C:\Users\Debbora\jrc\tests\complete_run3\directly_after_solve.gdx" v_directly_after_solve;
 
 $stop
 
