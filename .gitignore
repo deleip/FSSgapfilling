@@ -1,0 +1,7 @@
+/results/*
+/analysis/*
+/225*/
+/data/data_nuts.gdx
+/testing/put_errors_*
+*.log
+*.lst
