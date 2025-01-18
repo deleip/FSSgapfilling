@@ -1004,7 +1004,7 @@ loop(n0,
   execute_load "./results/results_gridunits.gdx" results_gridunits;
   put_utility batch 'gdxout' / "./results/fss2010grid_" n0.tl:2 ".gdx";
       execute_unload results_gridunits;
-  put_utility batch 'shell' / 'exec gams ./put_errors.gms -logOption=2 --checkcountry=' n0.tl:2
+  put_utility batch 'shell' / 'exec gams ./check_results.gms -logOption=2 --checkcountry=' n0.tl:2
   execute_unload "./results/results_gridunits.gdx" results_gridunits;
   option kill = results_gridunits;
 );

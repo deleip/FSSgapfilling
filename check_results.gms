@@ -79,7 +79,7 @@ $onlisting
 
 ***********************************
 
-file put_errors /"./testing/put_errors_%checkcountry%.txt"/;
+file put_errors /"./testing/discrepancies_%checkcountry%.txt"/;
 
 put put_errors ;
 
